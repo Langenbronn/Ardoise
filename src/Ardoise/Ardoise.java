@@ -1,63 +1,76 @@
 package Ardoise;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import javax.swing.ButtonGroup;
-import javax.swing.JCheckBoxMenuItem;
-import javax.swing.JFrame;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
-import javax.swing.JRadioButtonMenuItem;
+import java.awt.Color;
+import java.awt.*;
+import java.awt.Graphics;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionListener;
+import java.util.ArrayList;
 
-public class Ardoise extends JFrame{
-	  private JMenuBar menuBar = new JMenuBar();
-	  private JMenu menuFichier = new JMenu("Fichier");
-	  private JMenu menuSSFichier = new JMenu("Sous ficher");
-	  private JMenu menuEdition = new JMenu("Edition");
-	  private JMenu menuForme = new JMenu("Forme du  pointeur");
-	  private JMenu menuCouleur= new JMenu("Couleur du pointeur");
+import javax.swing.JPanel;
 
-	  private JMenuItem effacer = new JMenuItem("Efffacer");
-	  private JMenuItem quitter = new JMenuItem("Quitter");
-	  private JMenuItem formeRond = new JMenuItem("Rond");
-	  private JMenuItem formeCarré = new JMenuItem("Carré");
-	  private JMenuItem couleurRouge = new JMenuItem("Rouge");
-	  private JMenuItem couleurVert = new JMenuItem("Vert");
-	  private JMenuItem couleurBleu = new JMenuItem("Bleu");
+public class Ardoise extends JPanel {
+	private Color pointerColor = Color.red;
+	private int pointerSize = 10;
+	private String pointerType = "ROND";
+	private ArrayList<Point> points = new ArrayList<Point>();
+	private boolean erasing = true;
+	
+	public Ardoise(){
+	    this.addMouseListener(new MouseAdapter(){
+	      public void mousePressed(MouseEvent e){
+	        points.add(new Point(e.getX() - (pointerSize / 2), e.getY() - (pointerSize / 2), pointerSize, pointerColor, pointerType));
+	        repaint();
+	      }
+	    });
+	    this.addMouseMotionListener(new MouseMotionListener(){
+	      public void mouseDragged(MouseEvent e) {
+	        points.add(new Point(e.getX() - (pointerSize / 2), e.getY() - (pointerSize / 2), pointerSize, pointerColor, pointerType));
+	        repaint();
+	      }
+	      public void mouseMoved(MouseEvent e) {}
+	    });
+	  }   
+	  // Vous la connaissez maintenant, celle-là
+	  public void paintComponent(Graphics g) {
 
+	    g.setColor(Color.white);
+	    g.fillRect(0, 0, this.getWidth(), this.getHeight());
 
+	    //Si on doit effacer, on ne passe pas dans le else => pas de dessin
+	    if(this.erasing){
+	      this.erasing = false;
+	    }
+	    else{
+	      //On parcourt notre collection de points
+	      for(Point p : this.points)
+	      {
+	        //On récupère la couleur
+	        g.setColor(p.getColor());
 
-	  public static void main(String[] args){
-		  Ardoise ardoise = new Ardoise();
+	        //Selon le type de point
+	        if(p.getType().equals("SQUARE")){
+	          g.fillRect(p.getX(), p.getY(), p.getSize(), p.getSize());
+	        }
+	        else{
+	          g.fillOval(p.getX(), p.getY(), p.getSize(), p.getSize());
+	        }
+	      }
+	    }        
 	  }
 
-	  public Ardoise(){
-	    this.setSize(400, 200);
-	    this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-	    this.setLocationRelativeTo(null);
+	  public void erase(){
+	    this.erasing = true;
+	    this.points = new ArrayList<Point>();
+	    repaint();
+	  }
 
-	    this.menuFichier.add(effacer);
-	    this.menuFichier.addSeparator();
-	    this.menuFichier.add(quitter);
+	  public void setPointerColor(Color c){
+	    this.pointerColor = c;
+	  }
 
-	    this.menuEdition.add(menuForme);
-	    this.menuForme.add(formeRond);
-	    this.menuForme.add(formeCarré);
-	    this.menuEdition.addSeparator();
-	    this.menuEdition.add(menuCouleur);
-	    this.menuCouleur.add(couleurRouge);
-	    this.menuCouleur.add(couleurVert);	    
-	    this.menuCouleur.add(couleurBleu);
-	    
-	    quitter.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				System.exit(0);
-				}
-		});
-	    this.menuBar.add(menuFichier);
-	    this.menuBar.add(menuEdition);
-	    this.setJMenuBar(menuBar);
-	    this.setVisible(true);
-	}
+	  public void setPointerType(String str){
+	    this.pointerType = str;
+	  }      
 }
